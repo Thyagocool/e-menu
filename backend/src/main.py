@@ -3,10 +3,15 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from src.config import get_settings
 from src.infra.database import SessionLocal
+from src.modules.category.routes import router as category_router
+from src.modules.product.routes import router as product_router
+from src.modules.restaurant.routes import router as restaurant_router
+from src.modules.upload.routes import router as upload_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -25,6 +30,12 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title=settings.app_name, lifespan=lifespan)
+
+app.include_router(restaurant_router)
+app.include_router(category_router)
+app.include_router(product_router)
+app.include_router(upload_router)
+app.mount("/media", StaticFiles(directory="media"), name="media")
 
 
 @app.exception_handler(Exception)

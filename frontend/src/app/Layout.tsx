@@ -8,8 +8,12 @@ export default function Layout() {
           <Link to="/" className="brand">
             e-menu
           </Link>
-          <nav>
+          <nav className="nav">
             <Link to="/">Dashboard</Link>
+            <Link to="/restaurante">Restaurante</Link>
+            <Link to="/categorias">Categorias</Link>
+            <Link to="/produtos">Produtos</Link>
+            <Link to="/adicionais">Adicionais</Link>
           </nav>
         </div>
       </header>

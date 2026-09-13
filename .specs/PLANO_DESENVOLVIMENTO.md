@@ -5,8 +5,8 @@
 | Sprint | Status |
 |--------|--------|
 | Sprint 0 — Fundação | ✅ Desenvolvida |
-| Sprint 1 — Restaurante + catálogo | ⏳ Próxima |
-| Sprint 2 — Cardápio público | Pendente |
+| Sprint 1 — Restaurante + catálogo | ✅ Desenvolvida |
+| Sprint 2 — Cardápio público | ⏳ Próxima |
 | Sprint 3 — WhatsApp | Pendente |
 | Sprint 4 — Carrinho | Pendente |
 | Sprint 5 — IA | Pendente |
@@ -146,7 +146,7 @@ Definition of Done:
 - health check responde
 - lint/testes passam
 
-# Sprint 1 — Restaurante + catálogo
+# Sprint 1 — Restaurante + catálogo ✅ DESENVOLVIDA
 
 Implementar entidades:
 - Restaurant

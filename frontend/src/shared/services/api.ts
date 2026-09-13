@@ -1,0 +1,85 @@
+const BASE = import.meta.env.VITE_API_URL ?? '/api'
+
+export interface Restaurant {
+  id: number
+  name: string
+  slug: string
+  phone: string | null
+  whatsapp_phone: string | null
+  address: string | null
+  opening_hours: string | null
+  delivery_fee: string
+  status: 'active' | 'inactive'
+}
+
+export interface Category {
+  id: number
+  restaurant_id: number
+  name: string
+  description: string | null
+  sort_order: number
+  status: 'active' | 'inactive'
+}
+
+export interface Variant {
+  id: number
+  name: string
+  price: string
+  status: string
+}
+
+export interface Addon {
+  id: number
+  restaurant_id: number
+  name: string
+  price: string
+  status: string
+}
+
+export interface Product {
+  id: number
+  restaurant_id: number
+  category_id: number | null
+  name: string
+  description: string | null
+  image_url: string | null
+  base_price: string
+  status: 'active' | 'inactive'
+}
+
+export interface ProductDetail extends Product {
+  variants: Variant[]
+  addons: Addon[]
+}
+
+async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    ...options,
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail ?? `Erro ${res.status}`)
+  }
+  if (res.status === 204) return undefined as T
+  return res.json()
+}
+
+export const api = {
+  get: <T>(path: string) => request<T>(path),
+  post: <T>(path: string, body?: unknown) =>
+    request<T>(path, { method: 'POST', body: JSON.stringify(body ?? {}) }),
+  put: <T>(path: string, body?: unknown) =>
+    request<T>(path, { method: 'PUT', body: JSON.stringify(body ?? {}) }),
+  delete: (path: string) => request<void>(path, { method: 'DELETE' }),
+  upload: async (file: File): Promise<{ url: string }> => {
+    const form = new FormData()
+    form.append('file', file)
+    const res = await fetch(`${BASE}/upload`, { method: 'POST', body: form })
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      throw new Error(body.detail ?? 'Falha no upload')
+    }
+    return res.json()
+  },
+}
