@@ -86,5 +86,13 @@ docker compose up -d --build
 # testes backend: cd backend && .venv/bin/pytest
 ```
 
+### Refatoração — camadas repository + usecases
+- Routers viraram finos (só HTTP): `src/modules/{restaurant,category,product,upload}/routes.py`
+- Cada módulo agora tem `repository.py` (queries/persistência, sem commit) e `usecases.py` (regras de negócio + commit)
+- Erros de negócio via `DomainError(status_code, message)` (exceção registrada no `main.py`) em vez de `HTTPException` nos routers
+- Validações centralizadas nos usecases: slug único, categoria/adicional do restaurante, 404s, 409 com produtos, soft delete
+- Upload delegado a `src/infra/storage/save_image` (validação de formato/tamanho + salvamento)
+- API inalterada — 24 testes + ruff passando
+
 ## Sprint 2 — Cardápio público ⏳
 Próxima sprint. `GET /public/restaurants/:slug/menu` + página pública visual e responsiva.

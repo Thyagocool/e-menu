@@ -8,6 +8,7 @@ from sqlalchemy import text
 
 from src.config import get_settings
 from src.infra.database import SessionLocal
+from src.infra.errors import DomainError
 from src.modules.category.routes import router as category_router
 from src.modules.product.routes import router as product_router
 from src.modules.restaurant.routes import router as restaurant_router
@@ -36,6 +37,11 @@ app.include_router(category_router)
 app.include_router(product_router)
 app.include_router(upload_router)
 app.mount("/media", StaticFiles(directory="media"), name="media")
+
+
+@app.exception_handler(DomainError)
+async def domain_error_handler(request: Request, exc: DomainError) -> JSONResponse:
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
 
 
 @app.exception_handler(Exception)
