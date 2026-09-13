@@ -26,6 +26,7 @@ class ProductUpdate(BaseModel):
 class VariantCreate(BaseModel):
     name: str = Field(min_length=1, max_length=80)
     price: Decimal = Field(ge=0)
+    status: Literal["active", "inactive"] = "active"
 
 
 class VariantRead(BaseModel):

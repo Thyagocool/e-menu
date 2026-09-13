@@ -11,6 +11,7 @@ from src.infra.database import SessionLocal
 from src.infra.errors import DomainError
 from src.modules.category.routes import router as category_router
 from src.modules.product.routes import router as product_router
+from src.modules.public.routes import router as public_router
 from src.modules.restaurant.routes import router as restaurant_router
 from src.modules.upload.routes import router as upload_router
 
@@ -36,6 +37,7 @@ app.include_router(restaurant_router)
 app.include_router(category_router)
 app.include_router(product_router)
 app.include_router(upload_router)
+app.include_router(public_router)
 app.mount("/media", StaticFiles(directory="media"), name="media")
 
 

@@ -6,7 +6,7 @@
 |--------|--------|
 | Sprint 0 — Fundação | ✅ Desenvolvida |
 | Sprint 1 — Restaurante + catálogo | ✅ Desenvolvida |
-| Sprint 2 — Cardápio público | ⏳ Próxima |
+| Sprint 2 — Cardápio público | ✅ Desenvolvida |
 | Sprint 3 — WhatsApp | Pendente |
 | Sprint 4 — Carrinho | Pendente |
 | Sprint 5 — IA | Pendente |
@@ -172,7 +172,7 @@ Testes:
 - validações
 - isolamento por restaurant_id
 
-# Sprint 2 — Cardápio público
+# Sprint 2 — Cardápio público ✅ DESENVOLVIDA
 
 Endpoint:
 

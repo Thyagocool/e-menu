@@ -6,10 +6,12 @@ import CategoriesPage from '../modules/category/CategoriesPage.tsx'
 import ProductsPage from '../modules/product/ProductsPage.tsx'
 import ProductFormPage from '../modules/product/ProductFormPage.tsx'
 import AddonsPage from '../modules/product/AddonsPage.tsx'
+import MenuPage from '../modules/menu/MenuPage.tsx'
 
 export default function App() {
   return (
     <Routes>
+      <Route path="/cardapio/:slug" element={<MenuPage />} />
       <Route element={<Layout />}>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/restaurante" element={<RestaurantPage />} />

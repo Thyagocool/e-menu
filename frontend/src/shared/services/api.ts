@@ -52,6 +52,53 @@ export interface ProductDetail extends Product {
   addons: Addon[]
 }
 
+// --- Cardápio público ---
+
+export interface PublicRestaurant {
+  id: number
+  slug: string
+  name: string
+  phone: string | null
+  whatsapp_phone: string | null
+  address: string | null
+  opening_hours: string | null
+  delivery_fee: string
+}
+
+export interface PublicVariant {
+  id: number
+  name: string
+  price: string
+}
+
+export interface PublicAddon {
+  id: number
+  name: string
+  price: string
+}
+
+export interface PublicProduct {
+  id: number
+  name: string
+  description: string | null
+  image_url: string | null
+  base_price: string
+  variants: PublicVariant[]
+  addons: PublicAddon[]
+}
+
+export interface PublicCategory {
+  id: number
+  name: string
+  products: PublicProduct[]
+}
+
+export interface PublicMenu {
+  restaurant: PublicRestaurant
+  categories: PublicCategory[]
+  uncategorized_products: PublicProduct[]
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     headers: { 'Content-Type': 'application/json', ...options?.headers },
@@ -67,6 +114,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
 export const api = {
   get: <T>(path: string) => request<T>(path),
+  getPublicMenu: (slug: string) => request<PublicMenu>(`/public/restaurants/${slug}/menu`),
   post: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: 'POST', body: JSON.stringify(body ?? {}) }),
   put: <T>(path: string, body?: unknown) =>

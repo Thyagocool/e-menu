@@ -94,5 +94,37 @@ docker compose up -d --build
 - Upload delegado a `src/infra/storage/save_image` (validação de formato/tamanho + salvamento)
 - API inalterada — 24 testes + ruff passando
 
-## Sprint 2 — Cardápio público ⏳
-Próxima sprint. `GET /public/restaurants/:slug/menu` + página pública visual e responsiva.
+## Sprint 2 — Cardápio público ✅
+
+**Status: desenvolvida e validada (DoD cumprido).**
+
+### Backend — módulo `public`
+- `GET /public/restaurants/:slug/menu` — restaurante ativo + categorias ativas + produtos ativos, agrupados por categoria (produtos sem categoria em `uncategorized_products`)
+- `GET /public/restaurants/:slug/products/:id` — detalhe público do produto (US-015)
+- Filtros: só expõe restaurante/categoria/produto/variação/adicional com status `active`; slug inexistente ou restaurante inativo → 404
+- `VariantCreate` ganhou campo opcional `status` (variações podem ser inativadas)
+- Arquitetura: `repository` + `usecases` + router fino, seguindo a refatoração anterior
+
+### Testes
+- 8 testes novos (`tests/test_public.py`) — 32 no total, ruff limpo
+- Cobrem: agrupamento, sem categoria, 404 slug, 404 restaurante inativo, produto/variação inativa ocultos, isolamento entre restaurantes
+
+### Frontend — página pública (`/cardapio/:slug`)
+- `MenuPage` mobile-first fora do layout admin
+- Header com nome, horário, endereço e taxa de entrega
+- Chips de navegação sticky por categoria
+- Cards de produto: foto (ou placeholder), nome, descrição, preço ("a partir de" quando há variações)
+- Sheet de detalhe (US-015): variação (radio), adicionais (checkbox), observação e quantidade
+- Botão "Pedir pelo WhatsApp" (US-016): link `wa.me` com mensagem pré-preenchida identificando restaurante, produto, variação, adicionais, observação e quantidade
+- Build tsc + vite e oxlint passando
+
+### Validado E2E (docker)
+- `GET /public/restaurants/pizzaria-sol/menu` com categoria, produto, variações e adicionais embutidos
+- `/cardapio/pizzaria-sol` servido pelo nginx (SPA fallback)
+
+### Como acessar
+```sh
+# admin: http://localhost:8080 | cardápio: http://localhost:8080/cardapio/{slug}
+```
+
+## Sprint 3 — WhatsApp ⏳
