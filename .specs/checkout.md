@@ -159,6 +159,33 @@ curl -X POST localhost:8000/webhooks/whatsapp -H 'Content-Type: application/json
   -d '{"entry":[...]}'   # payload padrão da Meta Cloud API
 ```
 
-## Sprint 4 — Carrinho ⏳
+## Sprint 4 — Carrinho ✅
 
-Implementar `Cart`, `CartItem`, `CartItemAddon` + regras (`addItem`, `removeItem`, `updateQuantity`, `calculateSubtotal`, `clear`)
+**Status: desenvolvida e validada (DoD cumprido).**
+
+### Módulo `cart` (backend)
+- Models: `Cart` (1 por customer, unique), `CartItem` (unit_price = snapshot no momento da adição), `CartItemAddon` (price = snapshot)
+- Endpoints:
+  - `GET /customers/{customer_id}/cart` — carrinho completo (itens + subtotal); carrinho lazy (cria vazio se não existe)
+  - `POST /cart/items` — adiciona item (201); `PUT /cart/items/{item_id}` — altera quantidade; `DELETE /cart/items/{item_id}` — remove; `DELETE /customers/{customer_id}/cart` — limpa
+- Regras (todas no backend):
+  - produto precisa estar **ativo** e ser do **mesmo restaurante** do customer (restaurant_id sempre validado)
+  - produto com variações ativas **exige** variação ativa; sem variações, variação é recusada
+  - adicionais devem estar **ativos**, ser do mesmo restaurante **e vinculados ao produto**
+  - item repetido (mesmo produto + variação + mesmos adicionais) **soma quantidade** (teto 99)
+  - quantidade válida 1–99 (validate no schema)
+  - preço vem do backend: `line_total = (unit_price + Σ addons) × qty`; `subtotal = Σ line_total` (Decimal)
+- Isolamento: carrinho pertence ao customer (que pertence a um restaurante) — nenhum carrinho cruza restaurantes
+- Webhook do WhatsApp **agora devolve `customer_id`** na resposta (a IA vai precisar nas tools da Sprint 5)
+- Nota técnica: `session.get()` dispara autoflush que marca a collection vazia de um objeto recém-criado como *unloaded* → iterar dispara IO síncrona (MissingGreenlet no async); correção: inicializar `cart.items = []` no create (1 linha)
+
+### Testes
+- 17 testes novos (`tests/test_cart.py`) — **60 no total**, ruff limpo
+- Cobertos: subtotais fortes (múltiplos itens, variações, adicionais, quantidades), snapshot de preços, merge de itens, update/remove/clear, produto/variação/adicionais inválidos, quantity 0 (422), customer inexistente (404), isolamento entre customers
+
+### Validado E2E (docker)
+- Fluxo completo: add pizza (variação + adicional) `106.00` → + refri `124.00` → update `112.00` → remove `106.00` → get `106.00` → clear `0.00`
+
+## Sprint 5 — IA ⏳
+
+Implementar `ConversationService`, `AIService`, `ToolRegistry`, `PromptService` + tools (ver `.specs/PLANO_DESENVOLVIMENTO.md`)

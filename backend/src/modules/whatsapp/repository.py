@@ -5,6 +5,9 @@ from src.modules.whatsapp.models import Conversation, Customer, Message
 
 
 class CustomerRepository:
+    async def get(self, session: AsyncSession, customer_id: int) -> Customer | None:
+        return await session.get(Customer, customer_id)
+
     async def get_by_phone(self, session: AsyncSession, restaurant_id: int, phone: str) -> Customer | None:
         return await session.scalar(
             select(Customer).where(Customer.restaurant_id == restaurant_id, Customer.phone == phone)

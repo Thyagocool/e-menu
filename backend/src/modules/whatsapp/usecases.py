@@ -53,10 +53,10 @@ class WhatsAppService:
         if not self.provider.validate_signature(raw_body, signature):
             raise DomainError(401, "Assinatura do webhook inválida")
         event = self.provider.parse_event(payload)
-        message = await self._process_inbound(session, event)
-        return {"status": "ok", "message_id": message.id}
+        message, customer_id = await self._process_inbound(session, event)
+        return {"status": "ok", "message_id": message.id, "customer_id": customer_id}
 
-    async def _process_inbound(self, session: AsyncSession, event: WhatsAppEvent) -> Message:
+    async def _process_inbound(self, session: AsyncSession, event: WhatsAppEvent) -> tuple[Message, int]:
         restaurant = await self._find_restaurant(session, event.restaurant_number)
         if restaurant is None:
             raise DomainError(404, "Nenhum restaurante ativo corresponde a este número de WhatsApp")
@@ -75,7 +75,7 @@ class WhatsAppService:
 
         existing = await self.messages.get_by_external_id(session, event.external_message_id)
         if existing:
-            return existing  # idempotência: webhook reenviado não duplica
+            return existing, customer.id  # idempotência: webhook reenviado não duplica
 
         message = await self.messages.create(
             session, conversation.id, event.external_message_id, event.text
@@ -89,6 +89,6 @@ class WhatsAppService:
             existing = await self.messages.get_by_external_id(session, event.external_message_id)
             if existing is None:
                 raise
-            return existing
+            return existing, customer.id
         await session.refresh(message)
-        return message
+        return message, customer.id

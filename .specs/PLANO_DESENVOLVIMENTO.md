@@ -8,7 +8,7 @@
 | Sprint 1 — Restaurante + catálogo | ✅ Desenvolvida |
 | Sprint 2 — Cardápio público | ✅ Desenvolvida |
 | Sprint 3 — WhatsApp | Pendente |
-| Sprint 4 — Carrinho | Pendente |
+| Sprint 4 — Carrinho | ✅ Desenvolvida |
 | Sprint 5 — IA | Pendente |
 | Sprint 6 — Checkout | Pendente |
 | Sprint 7 — Pedidos | Pendente |
@@ -223,7 +223,7 @@ Persistir:
 
 Não acoplar o domínio inteiro ao provider.
 
-# Sprint 4 — Carrinho
+# Sprint 4 — Carrinho ✅ DESENVOLVIDA
 
 Implementar:
 - Cart
