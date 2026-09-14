@@ -194,7 +194,7 @@ O cardápio deve ser visual e comercialmente apresentável.
 
 Não implementar carrinho web completo no MVP. O objetivo é iniciar o WhatsApp.
 
-# Sprint 3 — WhatsApp
+# Sprint 3 — WhatsApp ✅ DESENVOLVIDA
 
 Criar abstração:
 

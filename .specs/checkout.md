@@ -127,4 +127,38 @@ docker compose up -d --build
 # admin: http://localhost:8080 | cardápio: http://localhost:8080/cardapio/{slug}
 ```
 
-## Sprint 3 — WhatsApp ⏳
+## Sprint 3 — WhatsApp ✅
+
+**Status: desenvolvida e validada (DoD cumprido).**
+
+### Backend — módulo `whatsapp`
+- `WhatsAppProvider` (`src/modules/whatsapp/provider.py`): fronteira com a WhatsApp Cloud API (Meta)
+  - `verify_hub` — verificação `GET` do webhook (`hub.mode/verify_token/challenge`)
+  - `validate_signature` — `X-Hub-Signature-256` (HMAC do `app_secret`); sem segredo configurado, aceita (modo dev)
+  - `parse_event` — normaliza payload → `WhatsAppEvent` (message_id, telefone, nome, número do restaurante, texto)
+  - `send` — envia mensagem pela Cloud API; sem credenciais, vira stub com log (dev)
+- `POST /webhooks/whatsapp` — valida assinatura, normaliza, identifica restaurante (por `whatsapp_phone` normalizado) e persiste a mensagem
+- `GET /webhooks/whatsapp` — verificação de subscription da Meta
+- Persistência: `Customer` (unique restaurante+telefone), `Conversation` (unique restaurante+cliente — US-019), `Message` (unique `external_message_id` para idempotência)
+- Idempotência: reenvio do webhook não duplica (mesmo `message_id` retornado; unique no banco como rede de segurança)
+- Config: `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET`, `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID` (vazios = dev)
+- `httpx` movido para dependências de runtime (era só de dev)
+- Rota trata body JSON inválido → 400 (antes caía no handler global → 500)
+
+### Testes
+- 11 testes novos (`tests/test_whatsapp.py`) — 43 no total, ruff limpo
+- Cobrem: criação de customer/conversation/message, idempotência, reuso de sessão, isolamento entre restaurantes, payload inválido (400), restaurante desconhecido (404), assinatura (aceita/válida/rejeitada), `verify_hub`, send stub
+
+### Validado E2E (docker)
+- Envio com payload Meta → 200 + `message_id`; reenvio → mesmo `message_id`
+- Body inválido → 400; número de restaurante desconhecido → 404
+
+### Como rodar em dev
+```sh
+curl -X POST localhost:8000/webhooks/whatsapp -H 'Content-Type: application/json' \
+  -d '{"entry":[...]}'   # payload padrão da Meta Cloud API
+```
+
+## Sprint 4 — Carrinho ⏳
+
+Implementar `Cart`, `CartItem`, `CartItemAddon` + regras (`addItem`, `removeItem`, `updateQuantity`, `calculateSubtotal`, `clear`)
