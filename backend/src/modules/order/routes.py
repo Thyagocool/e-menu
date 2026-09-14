@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.infra.database import get_session
-from src.modules.order.schemas import OrderCreate, OrderPreview, OrderRead, StatusUpdate
+from src.modules.order.schemas import DashboardRead, OrderCreate, OrderPreview, OrderRead, StatusUpdate
 from src.modules.order.usecases import OrderService
 
 router = APIRouter(prefix="/customers", tags=["orders"])
@@ -39,3 +39,8 @@ async def update_order_status(
     order_id: int, body: StatusUpdate, session: AsyncSession = Depends(get_session)
 ):
     return await OrderService().update_status(session, order_id, body.status)
+
+
+@admin_router.get("/restaurants/{restaurant_id}/dashboard", response_model=DashboardRead)
+async def restaurant_dashboard(restaurant_id: int, session: AsyncSession = Depends(get_session)):
+    return await OrderService().dashboard(session, restaurant_id)

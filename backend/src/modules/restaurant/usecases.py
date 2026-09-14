@@ -1,8 +1,11 @@
 import re
 import unicodedata
 
+import qrcode
+from qrcode.image.svg import SvgPathImage
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.config import get_settings
 from src.infra.errors import DomainError
 from src.modules.restaurant.models import Restaurant
 from src.modules.restaurant.repository import RestaurantRepository
@@ -48,3 +51,12 @@ class RestaurantUseCases:
         await session.commit()
         await session.refresh(restaurant)
         return restaurant
+
+    async def qr_svg(self, session: AsyncSession, restaurant_id: int) -> bytes:
+        """SVG do QR Code do cardápio público (US-037)."""
+        restaurant = await self.get(session, restaurant_id)
+        url = f"{get_settings().public_url}/cardapio/{restaurant.slug}"
+        qr = qrcode.QRCode(border=2)
+        qr.add_data(url)
+        qr.make(fit=True)
+        return qr.make_image(image_factory=SvgPathImage).to_string()

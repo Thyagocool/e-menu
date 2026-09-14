@@ -138,6 +138,20 @@ export default function RestaurantPage() {
           {save.isError && <span className="error">Erro: {(save.error as Error).message}</span>}
         </div>
       </form>
+      {restaurant?.slug && (
+        <div className="qr-box">
+          <h3>Cardápio público</h3>
+          <p className="muted">
+            Link: <a href={`/cardapio/${restaurant.slug}`}>{`/cardapio/${restaurant.slug}`}</a>
+          </p>
+          <img
+            src={api.getQrUrl(restaurant.id)}
+            alt="QR Code do cardápio"
+            width={180}
+            height={180}
+          />
+        </div>
+      )}
     </section>
   )
 }

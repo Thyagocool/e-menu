@@ -47,3 +47,16 @@ class OrderPreview(BaseModel):
     delivery_fee: Decimal
     total: Decimal
     items: list[OrderItemRead]
+
+
+class TopProduct(BaseModel):
+    name: str
+    quantity: int
+    revenue: Decimal
+
+
+class DashboardRead(BaseModel):
+    orders_today: int
+    revenue_today: Decimal
+    pending_orders: int
+    top_products: list[TopProduct]

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.infra.database import get_session
@@ -27,3 +28,9 @@ async def update_restaurant(
     restaurant_id: int, payload: RestaurantUpdate, session: AsyncSession = Depends(get_session)
 ) -> Restaurant:
     return await usecases.update(session, restaurant_id, payload)
+
+
+@router.get("/{restaurant_id}/qr")
+async def restaurant_qr(restaurant_id: int, session: AsyncSession = Depends(get_session)) -> Response:
+    svg = await usecases.qr_svg(session, restaurant_id)
+    return Response(content=svg, media_type="image/svg+xml")

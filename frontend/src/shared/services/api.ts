@@ -143,6 +143,21 @@ export interface Order {
   items: OrderItem[]
 }
 
+// --- Dashboard (US-036) ---
+
+export interface TopProduct {
+  name: string
+  quantity: number
+  revenue: string
+}
+
+export interface Dashboard {
+  orders_today: number
+  revenue_today: string
+  pending_orders: number
+  top_products: TopProduct[]
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     headers: { 'Content-Type': 'application/json', ...options?.headers },
@@ -168,6 +183,9 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify({ status }),
     }),
+  getDashboard: (restaurantId: number) =>
+    request<Dashboard>(`/restaurants/${restaurantId}/dashboard`),
+  getQrUrl: (restaurantId: number) => `${BASE}/restaurants/${restaurantId}/qr`,
   post: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: 'POST', body: JSON.stringify(body ?? {}) }),
   put: <T>(path: string, body?: unknown) =>

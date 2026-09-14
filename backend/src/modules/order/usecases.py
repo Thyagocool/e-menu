@@ -7,7 +7,15 @@ from src.infra.errors import DomainError
 from src.modules.cart.usecases import CartService
 from src.modules.order.models import Order, OrderItem
 from src.modules.order.repository import OrderRepository
-from src.modules.order.schemas import ORDER_STATUSES, OrderCreate, OrderItemRead, OrderPreview, OrderRead
+from src.modules.order.schemas import (
+    ORDER_STATUSES,
+    DashboardRead,
+    OrderCreate,
+    OrderItemRead,
+    OrderPreview,
+    OrderRead,
+    TopProduct,
+)
 from src.modules.restaurant.repository import RestaurantRepository
 from src.modules.whatsapp.repository import CustomerRepository
 
@@ -125,6 +133,17 @@ class OrderService:
         # expira a relação customer (commit não expira colunas; reload garante nome fresco)
         await session.refresh(order, attribute_names=["customer"])
         return self._read(order)
+
+    async def dashboard(self, session: AsyncSession, restaurant_id: int) -> DashboardRead:
+        if await self.restaurants.get(session, restaurant_id) is None:
+            raise DomainError(404, "Restaurante não encontrado")
+        data = await self.orders.dashboard(session, restaurant_id)
+        return DashboardRead(
+            orders_today=data["orders_today"],
+            revenue_today=data["revenue_today"],
+            pending_orders=data["pending_orders"],
+            top_products=[TopProduct(**p) for p in data["top_products"]],
+        )
 
     async def _delivery_fee(self, session: AsyncSession, customer_id: int) -> Decimal:
         customer = await self.customers.get(session, customer_id)

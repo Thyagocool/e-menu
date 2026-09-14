@@ -12,7 +12,8 @@
 | Sprint 5 — IA | ✅ Desenvolvida |
 | Sprint 6 — Checkout | ✅ Desenvolvida |
 | Sprint 7 — Pedidos | ✅ Desenvolvida |
-| Sprint 8 — Dashboard | ⏳ Próxima |
+| Sprint 8 — Dashboard | ✅ Desenvolvida |
+| Sprint 9 — Hardening | ⏳ Próxima |
 | Sprint 7 — Pedidos | Pendente |
 | Sprint 8 — Dashboard | Pendente |
 | Sprint 9 — Hardening | Pendente |
@@ -291,17 +292,13 @@ Implementado (ver `.specs/checkout.md` Sprint 7):
 - `PUT /orders/:id/status` (RECEIVED → … → COMPLETED, CANCELLED)
 - Frontend: página `/pedidos` — lista, filtro, detalhe, atualização de status
 
-# Sprint 8 — Dashboard
+# Sprint 8 — Dashboard ✅ DESENVOLVIDA
 
-Exibir:
-- pedidos hoje
-- faturamento hoje
-- pedidos pendentes
-- produtos mais pedidos
+Implementado (ver `.specs/checkout.md` Sprint 8):
 
-Evitar BI complexo.
-
-Implementar QR Code do cardápio.
+- `GET /restaurants/:id/dashboard` — pedidos hoje, faturamento hoje (COMPLETED), pendentes, top 5 produtos
+- `GET /restaurants/:id/qr` — QR Code SVG do cardápio (`PUBLIC_URL` configurável)
+- Frontend: painel com cards e ranking + QR na página do restaurante
 
 # Sprint 9 — Hardening
 

@@ -259,6 +259,21 @@ Fase 8 do BA.md (US-032..035): além da criação (Sprint 6), agora o restaurant
 ### Validado E2E (docker)
 - webhook "quero 1 pizza" + "confirmo" → Pedido #2 criado; `GET /restaurants/8/orders` retorna lista com cliente e horário; `PUT /orders/2/status {"status":"PREPARING"}` → PREPARING; painel em `http://localhost:8080/pedidos`
 
-## Sprint 8 — Dashboard ⏳
+## Sprint 8 — Dashboard ✅
 
-Pedidos hoje, faturamento hoje, pedidos pendentes, produtos mais pedidos + QR Code do cardápio (ver `.specs/PLANO_DESENVOLVIMENTO.md`)
+Fase 9 do BA.md (US-036/037): métricas operacionais simples + QR Code do cardápio público — sem BI complexo.
+
+### O que entrou
+- `GET /restaurants/{id}/dashboard` — `orders_today` (pedidos criados hoje, UTC), `revenue_today` (soma dos COMPLETED de hoje), `pending_orders` (RECEIVED…DELIVERING) e `top_products` (top 5 por quantidade, com receita)
+- `GET /restaurants/{id}/qr` — QR Code SVG do cardápio público (`{PUBLIC_URL}/cardapio/{slug}`), nova dependência `qrcode` (SVG puro, sem pillow); `PUBLIC_URL` configurável (default `http://localhost:8080`)
+- Frontend: `DashboardPage` com cards (pedidos hoje, faturamento hoje, pendentes) + ranking de produtos + link pros pedidos; bloco "Cardápio público" na página do restaurante com link e QR
+
+### Testes
+- 5 testes em `tests/test_dashboard.py`: métricas do dia (só COMPLETED conta no faturamento), cancelado não conta, top produtos ordenado por quantidade, 404, QR SVG — **97 no total**, ruff limpo, build/lint do frontend ok
+
+### Validado E2E (docker)
+- Pedido criado via webhook → painel: `orders_today: 1`, pendentes 1, top "Pizza Pepperoni 4x R$ 220.00"; após `PUT status COMPLETED` → `revenue_today: 220.00`, pendentes 0; `GET /restaurants/8/qr` responde `image/svg+xml` com SVG do QR
+
+## Sprint 9 — Hardening ⏳
+
+Autenticação, autorização, tenant isolation, rate limiting, logs, erros, idempotência, validações, observabilidade, testes de integração e E2E (ver `.specs/PLANO_DESENVOLVIMENTO.md`)
