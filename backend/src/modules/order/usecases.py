@@ -7,7 +7,7 @@ from src.infra.errors import DomainError
 from src.modules.cart.usecases import CartService
 from src.modules.order.models import Order, OrderItem
 from src.modules.order.repository import OrderRepository
-from src.modules.order.schemas import OrderCreate, OrderItemRead, OrderPreview, OrderRead
+from src.modules.order.schemas import ORDER_STATUSES, OrderCreate, OrderItemRead, OrderPreview, OrderRead
 from src.modules.restaurant.repository import RestaurantRepository
 from src.modules.whatsapp.repository import CustomerRepository
 
@@ -102,6 +102,30 @@ class OrderService:
         await self.carts.clear(session, customer_id)
         return result
 
+    async def list_by_restaurant(
+        self, session: AsyncSession, restaurant_id: int, status: str | None = None
+    ) -> list[OrderRead]:
+        orders = await self.orders.list_by_restaurant(session, restaurant_id, status)
+        return [self._read(o) for o in orders]
+
+    async def get(self, session: AsyncSession, order_id: int) -> OrderRead:
+        order = await self.orders.get(session, order_id)
+        if order is None:
+            raise DomainError(404, "Pedido não encontrado")
+        return self._read(order)
+
+    async def update_status(self, session: AsyncSession, order_id: int, status: str) -> OrderRead:
+        if status not in ORDER_STATUSES:
+            raise DomainError(400, f"Status inválido: {status}")
+        order = await self.orders.get(session, order_id)
+        if order is None:
+            raise DomainError(404, "Pedido não encontrado")
+        order.status = status
+        await session.commit()
+        # expira a relação customer (commit não expira colunas; reload garante nome fresco)
+        await session.refresh(order, attribute_names=["customer"])
+        return self._read(order)
+
     async def _delivery_fee(self, session: AsyncSession, customer_id: int) -> Decimal:
         customer = await self.customers.get(session, customer_id)
         if customer is None:
@@ -140,5 +164,7 @@ class OrderService:
             delivery_fee=order.delivery_fee,
             subtotal=order.subtotal,
             total=order.total,
+            customer_name=order.customer.name if order.customer else None,
+            created_at=order.created_at,
             items=[self._item_read(i) for i in order.items],
         )

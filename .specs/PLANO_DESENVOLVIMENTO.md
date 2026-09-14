@@ -11,7 +11,8 @@
 | Sprint 4 — Carrinho | ✅ Desenvolvida |
 | Sprint 5 — IA | ✅ Desenvolvida |
 | Sprint 6 — Checkout | ✅ Desenvolvida |
-| Sprint 7 — Pedidos | ⏳ Próxima |
+| Sprint 7 — Pedidos | ✅ Desenvolvida |
+| Sprint 8 — Dashboard | ⏳ Próxima |
 | Sprint 7 — Pedidos | Pendente |
 | Sprint 8 — Dashboard | Pendente |
 | Sprint 9 — Hardening | Pendente |
@@ -281,31 +282,14 @@ Garantias:
 - preço não vem do LLM
 - pedido só nasce após confirmação
 
-# Sprint 7 — Pedidos
+# Sprint 7 — Pedidos ✅ DESENVOLVIDA
 
-Implementar:
-- criação
-- listagem
-- detalhes
-- alteração de status
+Implementado (ver `.specs/checkout.md` Sprint 7):
 
-Status:
-
-```text
-RECEIVED
-CONFIRMED
-PREPARING
-READY
-DELIVERING
-COMPLETED
-CANCELLED
-```
-
-Frontend:
-- lista
-- filtros simples
-- detalhe
-- atualização de status
+- `GET /restaurants/:id/orders` (lista com cliente e horário, filtro por status)
+- `GET /orders/:id` (detalhe completo)
+- `PUT /orders/:id/status` (RECEIVED → … → COMPLETED, CANCELLED)
+- Frontend: página `/pedidos` — lista, filtro, detalhe, atualização de status
 
 # Sprint 8 — Dashboard
 

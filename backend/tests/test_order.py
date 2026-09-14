@@ -6,16 +6,14 @@ from tests.test_cart import create_product
 from tests.test_whatsapp import count_rows, meta_payload
 
 
-async def setup(client: AsyncClient, **restaurant_kwargs) -> tuple[int, int]:
+async def setup(client: AsyncClient, msg_id: str = "wamid-1", **restaurant_kwargs) -> tuple[int, int]:
     """Restaurante (delivery_fee configurável) + customer via webhook."""
-    restaurant = await create_restaurant(
-        client,
-        name="Pizzaria Sol",
-        slug="pizzaria-sol",
-        whatsapp_phone="5511999991234",
-        **restaurant_kwargs,
+    defaults = {"name": "Pizzaria Sol", "slug": "pizzaria-sol", "whatsapp_phone": "5511999991234"}
+    kwargs = {**defaults, **restaurant_kwargs}
+    restaurant = await create_restaurant(client, **kwargs)
+    response = await client.post(
+        "/webhooks/whatsapp", json=meta_payload(msg_id=msg_id, restaurant=kwargs["whatsapp_phone"])
     )
-    response = await client.post("/webhooks/whatsapp", json=meta_payload())
     assert response.status_code == 200, response.text
     return response.json()["customer_id"], restaurant["id"]
 

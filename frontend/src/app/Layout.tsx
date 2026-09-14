@@ -14,6 +14,7 @@ export default function Layout() {
             <Link to="/categorias">Categorias</Link>
             <Link to="/produtos">Produtos</Link>
             <Link to="/adicionais">Adicionais</Link>
+            <Link to="/pedidos">Pedidos</Link>
           </nav>
         </div>
       </header>

@@ -1,7 +1,10 @@
+from datetime import datetime
 from decimal import Decimal
 from typing import Literal
 
 from pydantic import BaseModel, Field
+
+ORDER_STATUSES = ("RECEIVED", "CONFIRMED", "PREPARING", "READY", "DELIVERING", "COMPLETED", "CANCELLED")
 
 
 class OrderCreate(BaseModel):
@@ -9,6 +12,10 @@ class OrderCreate(BaseModel):
     address: str | None = Field(default=None, max_length=300)
     payment_method: Literal["pix", "dinheiro", "cartao"] = "pix"
     confirmed: bool = True  # garantia US-026: pedido só nasce com confirmação
+
+
+class StatusUpdate(BaseModel):
+    status: Literal["RECEIVED", "CONFIRMED", "PREPARING", "READY", "DELIVERING", "COMPLETED", "CANCELLED"]
 
 
 class OrderItemRead(BaseModel):
@@ -29,6 +36,8 @@ class OrderRead(BaseModel):
     delivery_fee: Decimal
     subtotal: Decimal
     total: Decimal
+    customer_name: str | None = None
+    created_at: datetime | None = None
     items: list[OrderItemRead]
 
 

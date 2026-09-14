@@ -99,6 +99,50 @@ export interface PublicMenu {
   uncategorized_products: PublicProduct[]
 }
 
+// --- Pedidos ---
+
+export type OrderStatus =
+  | 'RECEIVED'
+  | 'CONFIRMED'
+  | 'PREPARING'
+  | 'READY'
+  | 'DELIVERING'
+  | 'COMPLETED'
+  | 'CANCELLED'
+
+export const ORDER_STATUSES: OrderStatus[] = [
+  'RECEIVED',
+  'CONFIRMED',
+  'PREPARING',
+  'READY',
+  'DELIVERING',
+  'COMPLETED',
+  'CANCELLED',
+]
+
+export interface OrderItem {
+  product_name: string
+  variant_name: string | null
+  unit_price: string
+  quantity: number
+  line_total: string
+  addons: { name: string; price: string }[]
+}
+
+export interface Order {
+  id: number
+  status: OrderStatus
+  delivery_type: string
+  address: string | null
+  payment_method: string
+  delivery_fee: string
+  subtotal: string
+  total: string
+  customer_name: string | null
+  created_at: string | null
+  items: OrderItem[]
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     headers: { 'Content-Type': 'application/json', ...options?.headers },
@@ -115,6 +159,15 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 export const api = {
   get: <T>(path: string) => request<T>(path),
   getPublicMenu: (slug: string) => request<PublicMenu>(`/public/restaurants/${slug}/menu`),
+  listOrders: (restaurantId: number, status?: string) =>
+    request<Order[]>(
+      `/restaurants/${restaurantId}/orders${status ? `?status=${status}` : ''}`,
+    ),
+  updateOrderStatus: (id: number, status: OrderStatus) =>
+    request<Order>(`/orders/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    }),
   post: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: 'POST', body: JSON.stringify(body ?? {}) }),
   put: <T>(path: string, body?: unknown) =>

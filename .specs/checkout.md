@@ -242,6 +242,23 @@ Fase 7 do BA.md (US-026..031) + criação do pedido com snapshot (US-032): o gar
 ### Validado E2E (docker)
 - "quero 2 pizzas" → `104.00`; "quero fechar, entrega" → pede endereço; "confirmo, entrega, rua das flores 123, dinheiro" → `Pedido #1`, entrega, dinheiro, `Total: 112.50` (104 + 8.50 taxa), carrinho zerado
 
-## Sprint 7 — Pedidos ⏳
+## Sprint 7 — Pedidos ✅
 
-Implementar listagem, detalhes e alteração de status (`RECEIVED → CONFIRMED → PREPARING → READY → DELIVERING → COMPLETED`, `CANCELLED`) + frontend (ver `.specs/PLANO_DESENVOLVIMENTO.md`)
+Fase 8 do BA.md (US-032..035): além da criação (Sprint 6), agora o restaurante lista, filtra e altera status dos pedidos — pelo API e pelo painel web.
+
+### O que entrou
+- `GET /restaurants/{id}/orders` — lista desc por id com `customer_name` e `created_at`; filtro opcional `?status=`
+- `GET /orders/{id}` — detalhe completo (itens com snapshot, endereço, pagamento, totais)
+- `PUT /orders/{id}/status` — troca de status (`RECEIVED → CONFIRMED → PREPARING → READY → DELIVERING → COMPLETED`, `CANCELLED`); status fora da lista → 422
+- `Order.customer` relationship (nome do cliente na listagem)
+- Frontend: página `/pedidos` (lista, filtro por status, detalhe com itens expandido, select de status + Salvar), link no nav e no dashboard
+
+### Testes
+- 7 testes em `tests/test_orders.py`: listagem desc, filtro por status, detalhe com snapshot, atualização de status (fluxo completo), status inválido rejeitado, 404, isolamento entre restaurantes — **92 no total**, ruff limpo, build do frontend ok
+
+### Validado E2E (docker)
+- webhook "quero 1 pizza" + "confirmo" → Pedido #2 criado; `GET /restaurants/8/orders` retorna lista com cliente e horário; `PUT /orders/2/status {"status":"PREPARING"}` → PREPARING; painel em `http://localhost:8080/pedidos`
+
+## Sprint 8 — Dashboard ⏳
+
+Pedidos hoje, faturamento hoje, pedidos pendentes, produtos mais pedidos + QR Code do cardápio (ver `.specs/PLANO_DESENVOLVIMENTO.md`)

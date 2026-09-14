@@ -7,6 +7,7 @@ import ProductsPage from '../modules/product/ProductsPage.tsx'
 import ProductFormPage from '../modules/product/ProductFormPage.tsx'
 import AddonsPage from '../modules/product/AddonsPage.tsx'
 import MenuPage from '../modules/menu/MenuPage.tsx'
+import OrdersPage from '../modules/orders/OrdersPage.tsx'
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/produtos/novo" element={<ProductFormPage />} />
         <Route path="/produtos/:id" element={<ProductFormPage />} />
         <Route path="/adicionais" element={<AddonsPage />} />
+        <Route path="/pedidos" element={<OrdersPage />} />
       </Route>
     </Routes>
   )

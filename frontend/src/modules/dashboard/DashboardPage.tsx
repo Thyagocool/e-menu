@@ -22,6 +22,10 @@ export default function DashboardPage() {
           <h3>Adicionais</h3>
           <span>Extras vinculáveis aos produtos</span>
         </Link>
+        <Link to="/pedidos" className="card link-card">
+          <h3>Pedidos</h3>
+          <span>Acompanhe e atualize o status dos pedidos</span>
+        </Link>
       </div>
     </section>
   )

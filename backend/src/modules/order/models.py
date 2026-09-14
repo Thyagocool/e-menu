@@ -5,6 +5,7 @@ from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.infra.database import Base, utcnow
+from src.modules.whatsapp.models import Customer
 
 
 class Order(Base):
@@ -26,6 +27,7 @@ class Order(Base):
     items: Mapped[list["OrderItem"]] = relationship(
         back_populates="order", cascade="all, delete-orphan", lazy="selectin"
     )
+    customer: Mapped[Customer] = relationship()
 
 
 class OrderItem(Base):
