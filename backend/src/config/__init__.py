@@ -17,6 +17,11 @@ class Settings(BaseSettings):
     whatsapp_token: str = ""
     whatsapp_phone_number_id: str = ""
 
+    # LLM (api_key vazia = modo dev com assistente heurístico, sem chamadas externas)
+    llm_api_key: str = ""
+    llm_model: str = "gpt-4o-mini"
+    llm_base_url: str = "https://api.openai.com/v1"
+
 
 @lru_cache
 def get_settings() -> Settings:

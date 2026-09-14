@@ -22,6 +22,9 @@ class CustomerRepository:
 
 
 class ConversationRepository:
+    async def get(self, session: AsyncSession, conversation_id: int) -> Conversation | None:
+        return await session.get(Conversation, conversation_id)
+
     async def get_by_customer(
         self, session: AsyncSession, restaurant_id: int, customer_id: int
     ) -> Conversation | None:
@@ -47,16 +50,28 @@ class MessageRepository:
             select(Message).where(Message.external_message_id == external_message_id)
         )
 
+    async def recent(
+        self, session: AsyncSession, conversation_id: int, limit: int = 10
+    ) -> list[Message]:
+        result = await session.scalars(
+            select(Message)
+            .where(Message.conversation_id == conversation_id)
+            .order_by(Message.created_at.desc())
+            .limit(limit)
+        )
+        return list(reversed(list(result)))
+
     async def create(
         self,
         session: AsyncSession,
         conversation_id: int,
         external_message_id: str,
         content: str,
+        direction: str = "inbound",
     ) -> Message:
         message = Message(
             conversation_id=conversation_id,
-            direction="inbound",
+            direction=direction,
             external_message_id=external_message_id,
             content=content,
         )

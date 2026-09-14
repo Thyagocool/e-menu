@@ -9,8 +9,8 @@
 | Sprint 2 — Cardápio público | ✅ Desenvolvida |
 | Sprint 3 — WhatsApp | Pendente |
 | Sprint 4 — Carrinho | ✅ Desenvolvida |
-| Sprint 5 — IA | Pendente |
-| Sprint 6 — Checkout | Pendente |
+| Sprint 5 — IA | ✅ Desenvolvida |
+| Sprint 6 — Checkout | ⏳ Próxima |
 | Sprint 7 — Pedidos | Pendente |
 | Sprint 8 — Dashboard | Pendente |
 | Sprint 9 — Hardening | Pendente |
@@ -249,57 +249,18 @@ Regras:
 
 Criar testes unitários fortes para cálculo.
 
-# Sprint 5 — IA
+# Sprint 5 — IA ✅ DESENVOLVIDA
 
-Criar:
+Criado (ver `.specs/checkout.md` Sprint 5):
 
 ```text
-ConversationService
-AIService
-ToolRegistry
+LLMProvider (OpenAI-compat + stub heurístico dev)
+ToolRegistry (7 tools com schemas JSON)
 PromptService
+AIService (loop de tools, adaptação de args)
 ```
 
-Fluxo:
-
-```text
-Mensagem
-  ↓
-Conversation
-  ↓
-Contexto
-  ↓
-LLM
-  ↓
-Tool
-  ↓
-Backend
-  ↓
-Resultado
-  ↓
-LLM
-  ↓
-WhatsApp
-```
-
-Tools iniciais:
-
-```text
-get_restaurant_info
-search_products
-get_product
-get_cart
-add_to_cart
-update_cart_item
-remove_cart_item
-```
-
-RAG:
-- FAQ
-- informações textuais do restaurante
-- descrições/conhecimento não transacional
-
-Não usar RAG como fonte oficial de preço ou estado do carrinho.
+Integração no webhook do WhatsApp: mensagem → IA → tool → backend → resposta salva como outbound e enviada. `LLM_API_KEY` vazio = assistente heurístico determinístico (mesma interface, troca só configurando a chave).
 
 # Sprint 6 — Checkout
 

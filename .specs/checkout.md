@@ -186,6 +186,34 @@ curl -X POST localhost:8000/webhooks/whatsapp -H 'Content-Type: application/json
 ### Validado E2E (docker)
 - Fluxo completo: add pizza (variação + adicional) `106.00` → + refri `124.00` → update `112.00` → remove `106.00` → get `106.00` → clear `0.00`
 
-## Sprint 5 — IA ⏳
+## Sprint 5 — Garçom IA ✅
 
-Implementar `ConversationService`, `AIService`, `ToolRegistry`, `PromptService` + tools (ver `.specs/PLANO_DESENVOLVIMENTO.md`)
+Atendimento conversacional via WhatsApp com LLM (ou assistente heurístico em dev): o webhook responde ao cliente com cardápio, busca, carrinho, adição/alteração/remoção de itens — as US-020..026 da Fase 6 do BA.md.
+
+### O que entrou
+- `Restaurant.description` (String 2000) — modelo + schemas + migration `0005_restaurant_description.py`
+- Settings LLM (`LLM_API_KEY`, `LLM_MODEL`, `LLM_BASE_URL`; chave vazia = modo dev)
+- `src/modules/ai/`:
+  - `provider.py` — `LLMProvider` OpenAI-compat (`/chat/completions` com tools) + stub heurístico determinístico em pt-BR (regras: saudação, cardápio, busca, adicionar "quero 2 pizzas e 1 coca", "coloca mais uma", remover, ver carrinho), `MAX_TOOL_ROUNDS=3`
+  - `tools.py` — `ToolRegistry` com 7 tools (get_restaurant_info, search_products, get_product, get_cart, add_to_cart, update_cart_item, remove_cart_item) com schemas JSON
+  - `prompts.py` — system prompt do garçom com regra de confirmação explícita (US-026)
+  - `usecases.py` — `AIService.handle_message`: histórico recente → LLM → loop de tools → resposta; `_adapt_args` injeta `customer_id`/`restaurant_id` (contexto da conversa), resolve `product_name` → `product_id` (1ª variação ativa) e `item_name` → `item_id`; "coloca mais uma" sem nome = item mais antigo
+- Webhook do WhatsApp agora: salva a resposta como `Message` outbound (**2 mensagens por interação**: inbound + outbound), devolve `reply` no body; reenvio idempotente não re-responde
+- Busca textual com singularização básica ("pizzas" acha "Pizza")
+- `.env.example` com as 3 vars `LLM_*`
+
+### Lições (SQLAlchemy async)
+- `expire_all()` das tools do carrinho invalida objetos ORM da sessão compartilhada → capturar `customer_id`/`restaurant_id` como primitivos antes do loop de tools; `message.id` também é lido antes
+- Ordem dos itens no dump do carrinho não é garantida → testes buscam por `product_name`, "sem nome" resolve pelo menor `item_id`
+
+### Testes
+- 11 testes novos em `tests/test_ai.py` (fluxo completo via webhook: saudação, cardápio, busca, adição com quantidade/variação, merge, update, remove, carrinho vazio/cheio, produto inexistente, remover item que não está no carrinho) + ajuste dos testes do whatsapp (contagem de mensagens) — **73 no total**, ruff limpo
+- Cobertos também pela suíte: idempotência com resposta (`Message` não duplica), isolamento entre restaurantes
+
+### Validado E2E (docker)
+- Fluxo: "quero 2 pizzas" → `2x Pizza Pepperoni (Grande) = 110.00`; "tira a coca" (inexistente) → "Item não encontrado" sem alterar o carrinho; "meu pedido" → pedido atual; "coloca mais uma" → `3x ... = 165.00`; "cardápio" → lista com preços
+- Stub heurístico em prod de dev; com `LLM_API_KEY` + tools o mesmo fluxo funciona com IA real sem mudança de código
+
+## Sprint 6 — Pedido / Checkout ⏳
+
+Implementar pedido (US-026..028): fechar pedido após confirmação explícita, snapshot final no pedido, Webhook assíncrono (ver `.specs/PLANO_DESENVOLVIMENTO.md`)

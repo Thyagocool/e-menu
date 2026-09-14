@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.infra.errors import DomainError
+from src.modules.ai.usecases import AIService
 from src.modules.restaurant.models import Restaurant
 from src.modules.whatsapp.models import Message
 from src.modules.whatsapp.provider import WhatsAppEvent, WhatsAppProvider
@@ -25,11 +26,13 @@ class WhatsAppService:
         customers: CustomerRepository | None = None,
         conversations: ConversationRepository | None = None,
         messages: MessageRepository | None = None,
+        ai: AIService | None = None,
     ):
         self.provider = provider or WhatsAppProvider()
         self.customers = customers or CustomerRepository()
         self.conversations = conversations or ConversationRepository()
         self.messages = messages or MessageRepository()
+        self.ai = ai or AIService()
 
     async def _find_restaurant(
         self, session: AsyncSession, restaurant_number: str | None
@@ -53,10 +56,22 @@ class WhatsAppService:
         if not self.provider.validate_signature(raw_body, signature):
             raise DomainError(401, "Assinatura do webhook inválida")
         event = self.provider.parse_event(payload)
-        message, customer_id = await self._process_inbound(session, event)
-        return {"status": "ok", "message_id": message.id, "customer_id": customer_id}
+        message, customer_id, duplicate, conversation_id = await self._process_inbound(session, event)
+        message_id = message.id  # tools expiram a sessão; capturar antes
+        if duplicate:
+            return {"status": "ok", "message_id": message_id, "customer_id": customer_id}
 
-    async def _process_inbound(self, session: AsyncSession, event: WhatsAppEvent) -> tuple[Message, int]:
+        reply = await self.ai.handle_message(session, conversation_id, event.text)
+        sent_id = await self.provider.send(event.customer_phone, reply)
+        await self.messages.create(
+            session, conversation_id, sent_id, reply, direction="outbound"
+        )
+        await session.commit()
+        return {"status": "ok", "message_id": message_id, "customer_id": customer_id, "reply": reply}
+
+    async def _process_inbound(
+        self, session: AsyncSession, event: WhatsAppEvent
+    ) -> tuple[Message, int, bool, int]:
         restaurant = await self._find_restaurant(session, event.restaurant_number)
         if restaurant is None:
             raise DomainError(404, "Nenhum restaurante ativo corresponde a este número de WhatsApp")
@@ -75,7 +90,7 @@ class WhatsAppService:
 
         existing = await self.messages.get_by_external_id(session, event.external_message_id)
         if existing:
-            return existing, customer.id  # idempotência: webhook reenviado não duplica
+            return existing, customer.id, True, conversation.id  # idempotência: reenvio não duplica
 
         message = await self.messages.create(
             session, conversation.id, event.external_message_id, event.text
@@ -89,6 +104,6 @@ class WhatsAppService:
             existing = await self.messages.get_by_external_id(session, event.external_message_id)
             if existing is None:
                 raise
-            return existing, customer.id
+            return existing, customer.id, True, conversation.id
         await session.refresh(message)
-        return message, customer.id
+        return message, customer.id, False, conversation.id

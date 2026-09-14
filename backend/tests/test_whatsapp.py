@@ -42,9 +42,10 @@ async def test_webhook_creates_customer_conversation_message(client: AsyncClient
     response = await client.post("/webhooks/whatsapp", json=meta_payload())
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
+    assert "reply" in response.json()  # o garçom (IA) respondeu
     assert await count_rows(Customer) == 1
     assert await count_rows(Conversation) == 1
-    assert await count_rows(Message) == 1
+    assert await count_rows(Message) == 2  # inbound + resposta outbound
 
 
 async def test_webhook_is_idempotent(client: AsyncClient) -> None:
@@ -52,7 +53,7 @@ async def test_webhook_is_idempotent(client: AsyncClient) -> None:
     first = (await client.post("/webhooks/whatsapp", json=meta_payload())).json()
     second = (await client.post("/webhooks/whatsapp", json=meta_payload())).json()
     assert first["message_id"] == second["message_id"]
-    assert await count_rows(Message) == 1
+    assert await count_rows(Message) == 2  # reenvio não duplica (inbound + outbound)
     assert await count_rows(Conversation) == 1
 
 
@@ -62,7 +63,7 @@ async def test_webhook_reuses_customer_and_conversation(client: AsyncClient) -> 
     await client.post("/webhooks/whatsapp", json=meta_payload(msg_id="wamid-2", text="Quero borda"))
     assert await count_rows(Customer) == 1
     assert await count_rows(Conversation) == 1
-    assert await count_rows(Message) == 2
+    assert await count_rows(Message) == 4  # 2 inbound + 2 respostas
 
 
 async def test_webhook_isolates_restaurants(client: AsyncClient) -> None:

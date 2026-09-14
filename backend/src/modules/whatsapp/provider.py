@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import logging
+import uuid
 from dataclasses import dataclass
 
 import httpx
@@ -79,7 +80,7 @@ class WhatsAppProvider:
         token = self.settings.whatsapp_token
         if not phone_number_id or not token:
             logger.info("send (dev stub, sem credenciais): to=%s text=%r", to, text)
-            return f"stub-{len(text)}"
+            return f"stub-{uuid.uuid4().hex[:12]}"
         async with httpx.AsyncClient(timeout=10) as client:
             response = await client.post(
                 f"{self.API_URL}/{phone_number_id}/messages",

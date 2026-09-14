@@ -10,6 +10,7 @@ class RestaurantCreate(BaseModel):
     slug: str | None = Field(default=None, max_length=120, pattern=r"^[a-z0-9-]+$")
     phone: str | None = Field(default=None, max_length=20)
     whatsapp_phone: str | None = Field(default=None, max_length=20)
+    description: str | None = Field(default=None, max_length=2000)
     address: str | None = Field(default=None, max_length=255)
     opening_hours: str | None = Field(default=None, max_length=120)
     delivery_fee: Decimal = Field(default=Decimal("0"), ge=0)
@@ -21,6 +22,7 @@ class RestaurantUpdate(BaseModel):
     slug: str | None = Field(default=None, max_length=120, pattern=r"^[a-z0-9-]+$")
     phone: str | None = Field(default=None, max_length=20)
     whatsapp_phone: str | None = Field(default=None, max_length=20)
+    description: str | None = Field(default=None, max_length=2000)
     address: str | None = Field(default=None, max_length=255)
     opening_hours: str | None = Field(default=None, max_length=120)
     delivery_fee: Decimal | None = Field(default=None, ge=0)
@@ -35,6 +37,7 @@ class RestaurantRead(BaseModel):
     slug: str
     phone: str | None
     whatsapp_phone: str | None
+    description: str | None
     address: str | None
     opening_hours: str | None
     delivery_fee: Decimal

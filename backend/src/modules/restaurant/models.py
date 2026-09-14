@@ -15,6 +15,7 @@ class Restaurant(Base):
     slug: Mapped[str] = mapped_column(String(120), unique=True, index=True)
     phone: Mapped[str | None] = mapped_column(String(20))
     whatsapp_phone: Mapped[str | None] = mapped_column(String(20))
+    description: Mapped[str | None] = mapped_column(String(2000))
     address: Mapped[str | None] = mapped_column(String(255))
     opening_hours: Mapped[str | None] = mapped_column(String(120))
     delivery_fee: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0"))
