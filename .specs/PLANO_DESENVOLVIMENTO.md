@@ -5,12 +5,15 @@
 | Sprint | Status |
 |--------|--------|
 | Sprint 0 — Fundação | ✅ Desenvolvida |
-| Sprint 1 — Restaurante + catálogo | ⏳ Próxima |
-| Sprint 2 — Cardápio público | Pendente |
+| Sprint 1 — Restaurante + catálogo | ✅ Desenvolvida |
+| Sprint 2 — Cardápio público | ✅ Desenvolvida |
 | Sprint 3 — WhatsApp | Pendente |
-| Sprint 4 — Carrinho | Pendente |
-| Sprint 5 — IA | Pendente |
-| Sprint 6 — Checkout | Pendente |
+| Sprint 4 — Carrinho | ✅ Desenvolvida |
+| Sprint 5 — IA | ✅ Desenvolvida |
+| Sprint 6 — Checkout | ✅ Desenvolvida |
+| Sprint 7 — Pedidos | ✅ Desenvolvida |
+| Sprint 8 — Dashboard | ✅ Desenvolvida |
+| Sprint 9 — Hardening | ⏳ Próxima |
 | Sprint 7 — Pedidos | Pendente |
 | Sprint 8 — Dashboard | Pendente |
 | Sprint 9 — Hardening | Pendente |
@@ -146,7 +149,7 @@ Definition of Done:
 - health check responde
 - lint/testes passam
 
-# Sprint 1 — Restaurante + catálogo
+# Sprint 1 — Restaurante + catálogo ✅ DESENVOLVIDA
 
 Implementar entidades:
 - Restaurant
@@ -172,7 +175,7 @@ Testes:
 - validações
 - isolamento por restaurant_id
 
-# Sprint 2 — Cardápio público
+# Sprint 2 — Cardápio público ✅ DESENVOLVIDA
 
 Endpoint:
 
@@ -194,7 +197,7 @@ O cardápio deve ser visual e comercialmente apresentável.
 
 Não implementar carrinho web completo no MVP. O objetivo é iniciar o WhatsApp.
 
-# Sprint 3 — WhatsApp
+# Sprint 3 — WhatsApp ✅ DESENVOLVIDA
 
 Criar abstração:
 
@@ -223,7 +226,7 @@ Persistir:
 
 Não acoplar o domínio inteiro ao provider.
 
-# Sprint 4 — Carrinho
+# Sprint 4 — Carrinho ✅ DESENVOLVIDA
 
 Implementar:
 - Cart
@@ -249,74 +252,29 @@ Regras:
 
 Criar testes unitários fortes para cálculo.
 
-# Sprint 5 — IA
+# Sprint 5 — IA ✅ DESENVOLVIDA
 
-Criar:
+Criado (ver `.specs/checkout.md` Sprint 5):
 
 ```text
-ConversationService
-AIService
-ToolRegistry
+LLMProvider (OpenAI-compat + stub heurístico dev)
+ToolRegistry (7 tools com schemas JSON)
 PromptService
+AIService (loop de tools, adaptação de args)
 ```
 
-Fluxo:
+Integração no webhook do WhatsApp: mensagem → IA → tool → backend → resposta salva como outbound e enviada. `LLM_API_KEY` vazio = assistente heurístico determinístico (mesma interface, troca só configurando a chave).
 
-```text
-Mensagem
-  ↓
-Conversation
-  ↓
-Contexto
-  ↓
-LLM
-  ↓
-Tool
-  ↓
-Backend
-  ↓
-Resultado
-  ↓
-LLM
-  ↓
-WhatsApp
-```
+# Sprint 6 — Checkout ✅ DESENVOLVIDA
 
-Tools iniciais:
+Implementado (ver `.specs/checkout.md` Sprint 6):
 
-```text
-get_restaurant_info
-search_products
-get_product
-get_cart
-add_to_cart
-update_cart_item
-remove_cart_item
-```
-
-RAG:
-- FAQ
-- informações textuais do restaurante
-- descrições/conhecimento não transacional
-
-Não usar RAG como fonte oficial de preço ou estado do carrinho.
-
-# Sprint 6 — Checkout
-
-Implementar:
-- retirada/entrega
-- endereço
-- taxa fixa
-- pagamento
-- resumo
-- confirmação
-
-Tools:
-
-```text
-calculate_order
-create_order
-```
+- `Order` + `OrderItem` (snapshot comercial) — migration `0006`
+- calculo de total pelo backend (subtotal + taxa fixa)
+- retirada/entrega + endereço obrigatório pra entrega
+- pagamento: pix / dinheiro / cartão (sem gateway no MVP)
+- resumo pré-confirmação e criação só após confirmação explícita
+- tools: `calculate_order`, `create_order`
 
 Garantias:
 - total calculado pelo backend
@@ -325,43 +283,22 @@ Garantias:
 - preço não vem do LLM
 - pedido só nasce após confirmação
 
-# Sprint 7 — Pedidos
+# Sprint 7 — Pedidos ✅ DESENVOLVIDA
 
-Implementar:
-- criação
-- listagem
-- detalhes
-- alteração de status
+Implementado (ver `.specs/checkout.md` Sprint 7):
 
-Status:
+- `GET /restaurants/:id/orders` (lista com cliente e horário, filtro por status)
+- `GET /orders/:id` (detalhe completo)
+- `PUT /orders/:id/status` (RECEIVED → … → COMPLETED, CANCELLED)
+- Frontend: página `/pedidos` — lista, filtro, detalhe, atualização de status
 
-```text
-RECEIVED
-CONFIRMED
-PREPARING
-READY
-DELIVERING
-COMPLETED
-CANCELLED
-```
+# Sprint 8 — Dashboard ✅ DESENVOLVIDA
 
-Frontend:
-- lista
-- filtros simples
-- detalhe
-- atualização de status
+Implementado (ver `.specs/checkout.md` Sprint 8):
 
-# Sprint 8 — Dashboard
-
-Exibir:
-- pedidos hoje
-- faturamento hoje
-- pedidos pendentes
-- produtos mais pedidos
-
-Evitar BI complexo.
-
-Implementar QR Code do cardápio.
+- `GET /restaurants/:id/dashboard` — pedidos hoje, faturamento hoje (COMPLETED), pendentes, top 5 produtos
+- `GET /restaurants/:id/qr` — QR Code SVG do cardápio (`PUBLIC_URL` configurável)
+- Frontend: painel com cards e ranking + QR na página do restaurante
 
 # Sprint 9 — Hardening
 

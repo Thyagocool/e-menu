@@ -1,0 +1,286 @@
+.menu-page {
+  min-height: 100vh;
+  background: #f7f5f2;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+.menu-header {
+  background: linear-gradient(135deg, #24292e 0%, #3a4148 100%);
+  color: #fff;
+  padding: 40px 20px 28px;
+  text-align: center;
+}
+
+.menu-brand {
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-size: 12px;
+  color: #9fb6c8;
+  margin: 0 0 12px;
+}
+
+.menu-name {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+.menu-meta {
+  margin: 4px 0 0;
+  color: #d3dade;
+  font-size: 14px;
+}
+
+.menu-nav {
+  position: sticky;
+  top: 0;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  z-index: 10;
+}
+
+.menu-chip {
+  flex: 0 0 auto;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #f0ece6;
+  color: #513f2a;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid #e4dccf;
+}
+
+.menu-chip:active {
+  background: #e0d6c6;
+}
+
+.menu-body {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+}
+
+.menu-section {
+  margin-bottom: 32px;
+  scroll-margin-top: 70px;
+}
+
+.menu-section-title {
+  font-size: 20px;
+  color: #24292e;
+  margin: 0 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #e8a33d;
+  display: inline-block;
+}
+
+.menu-products {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.product-card {
+  display: flex;
+  gap: 14px;
+  text-align: left;
+  padding: 12px;
+  border: 1px solid #eadfce;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  width: 100%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.product-card:active {
+  transform: scale(0.995);
+}
+
+.product-image {
+  width: 84px;
+  height: 84px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex: 0 0 auto;
+}
+
+.product-image-placeholder {
+  background: linear-gradient(135deg, #d9d2c6, #ece6da);
+}
+
+.product-info {
+  min-width: 0;
+}
+
+.product-name {
+  margin: 0 0 4px;
+  font-size: 16px;
+  color: #24292e;
+}
+
+.product-description {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: #6b6b6b;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-price {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1d7a3f;
+}
+
+/* Painel de detalhe do produto */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 50;
+}
+
+.sheet {
+  position: relative;
+  background: #fff;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 20px 28px;
+}
+
+.sheet-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  border: none;
+  background: #f0ece6;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: #513f2a;
+}
+
+.sheet-image {
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+.sheet-title {
+  margin: 16px 0 4px;
+  font-size: 22px;
+  color: #24292e;
+}
+
+.sheet-description {
+  margin: 0 0 12px;
+  color: #6b6b6b;
+  font-size: 14px;
+}
+
+.sheet-group {
+  border: 1px solid #eadfce;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 12px 0;
+}
+
+.sheet-group legend {
+  font-size: 13px;
+  font-weight: 700;
+  color: #513f2a;
+  padding: 0 6px;
+}
+
+.sheet-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #24292e;
+  cursor: pointer;
+}
+
+.sheet-price {
+  margin-left: auto;
+  font-weight: 700;
+  color: #1d7a3f;
+}
+
+.sheet-row-note,
+.sheet-row-qty {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.sheet-row-note input,
+.sheet-row-qty select {
+  padding: 10px;
+  border: 1px solid #d8cfc0;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.sheet-whatsapp {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #25d366;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.sheet-whatsapp:active {
+  background: #1eb957;
+}
+
+.menu-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 80px;
+  text-align: center;
+  color: #513f2a;
+}
+
+.menu-empty h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.menu-empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
+@media (min-width: 640px) {
+  .sheet {
+    border-radius: 20px;
+    margin-bottom: 24px;
+  }
+}

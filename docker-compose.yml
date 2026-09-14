@@ -12,6 +12,8 @@ services:
       retries: 10
     volumes:
       - db_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
 
   redis:
     image: redis:7-alpine
@@ -32,6 +34,8 @@ services:
       redis:
         condition: service_healthy
     command: sh -c "alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port 8000"
+    volumes:
+      - media_data:/app/media
     ports:
       - "8000:8000"
 
@@ -44,3 +48,4 @@ services:
 
 volumes:
   db_data:
+  media_data:

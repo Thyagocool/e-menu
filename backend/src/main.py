@@ -3,10 +3,21 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from src.config import get_settings
 from src.infra.database import SessionLocal
+from src.infra.errors import DomainError
+from src.modules.cart.routes import router as cart_router
+from src.modules.category.routes import router as category_router
+from src.modules.order.routes import admin_router as order_admin_router
+from src.modules.order.routes import router as order_router
+from src.modules.product.routes import router as product_router
+from src.modules.public.routes import router as public_router
+from src.modules.restaurant.routes import router as restaurant_router
+from src.modules.upload.routes import router as upload_router
+from src.modules.whatsapp.routes import router as whatsapp_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -25,6 +36,22 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title=settings.app_name, lifespan=lifespan)
+
+app.include_router(restaurant_router)
+app.include_router(category_router)
+app.include_router(product_router)
+app.include_router(upload_router)
+app.include_router(public_router)
+app.include_router(whatsapp_router)
+app.include_router(cart_router)
+app.include_router(order_router)
+app.include_router(order_admin_router)
+app.mount("/media", StaticFiles(directory="media"), name="media")
+
+
+@app.exception_handler(DomainError)
+async def domain_error_handler(request: Request, exc: DomainError) -> JSONResponse:
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
 
 
 @app.exception_handler(Exception)
