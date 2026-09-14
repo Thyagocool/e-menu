@@ -2,6 +2,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.modules.cart.usecases import CartService
+from src.modules.order.schemas import OrderCreate
+from src.modules.order.usecases import OrderService
 from src.modules.product.models import Product
 from src.modules.product.repository import ProductRepository
 from src.modules.restaurant.repository import RestaurantRepository
@@ -42,10 +44,12 @@ class ToolRegistry:
         restaurants: RestaurantRepository | None = None,
         products: ProductRepository | None = None,
         carts: CartService | None = None,
+        orders: OrderService | None = None,
     ):
         self.restaurants = restaurants or RestaurantRepository()
         self.products = products or ProductRepository()
         self.carts = carts or CartService()
+        self.orders = orders or OrderService()
         self._tools: dict[str, dict] = {}
         self._register_all()
 
@@ -190,6 +194,53 @@ class ToolRegistry:
         ["customer_id", "item_id"],
     )
 
+    async def calculate_order(
+        self, session: AsyncSession, customer_id: int, delivery_type: str = "retirada"
+    ) -> dict:
+        preview = await self.orders.calculate(session, customer_id, delivery_type)
+        return preview.model_dump()
+    calculate_order.schema = _schema(  # type: ignore[attr-defined]
+        "calculate_order",
+        "Calcula o resumo do pedido (subtotal, taxa de entrega e total) sem criar nada.",
+        {"customer_id": {"type": "integer"}, "delivery_type": {"type": "string"}},
+        ["customer_id"],
+    )
+
+    async def create_order(
+        self,
+        session: AsyncSession,
+        customer_id: int,
+        delivery_type: str = "retirada",
+        address: str | None = None,
+        payment_method: str = "pix",
+        confirmed: bool = True,
+    ) -> dict:
+        return (
+            await self.orders.create(
+                session,
+                customer_id,
+                OrderCreate(
+                    delivery_type=delivery_type,
+                    address=address,
+                    payment_method=payment_method,
+                    confirmed=confirmed,
+                ),
+            )
+        ).model_dump()
+    create_order.schema = _schema(  # type: ignore[attr-defined]
+        "create_order",
+        "Cria o pedido final com snapshot dos itens e limpa o carrinho. "
+        "Só chamar após confirmação EXPLÍCITA do cliente (ex.: \"confirmo\").",
+        {
+            "customer_id": {"type": "integer"},
+            "delivery_type": {"type": "string"},
+            "address": {"type": ["string", "null"]},
+            "payment_method": {"type": "string"},
+            "confirmed": {"type": "boolean"},
+        },
+        ["customer_id", "confirmed"],
+    )
+
     def _register_all(self) -> None:
         for name in (
             "get_restaurant_info",
@@ -199,5 +250,7 @@ class ToolRegistry:
             "add_to_cart",
             "update_cart_item",
             "remove_cart_item",
+            "calculate_order",
+            "create_order",
         ):
             self._register(getattr(self, name))

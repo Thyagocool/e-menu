@@ -214,6 +214,34 @@ Atendimento conversacional via WhatsApp com LLM (ou assistente heurístico em de
 - Fluxo: "quero 2 pizzas" → `2x Pizza Pepperoni (Grande) = 110.00`; "tira a coca" (inexistente) → "Item não encontrado" sem alterar o carrinho; "meu pedido" → pedido atual; "coloca mais uma" → `3x ... = 165.00`; "cardápio" → lista com preços
 - Stub heurístico em prod de dev; com `LLM_API_KEY` + tools o mesmo fluxo funciona com IA real sem mudança de código
 
-## Sprint 6 — Pedido / Checkout ⏳
+## Sprint 6 — Pedido / Checkout ✅
 
-Implementar pedido (US-026..028): fechar pedido após confirmação explícita, snapshot final no pedido, Webhook assíncrono (ver `.specs/PLANO_DESENVOLVIMENTO.md`)
+Fase 7 do BA.md (US-026..031) + criação do pedido com snapshot (US-032): o garçom calcula o resumo (com taxa fixa), pede endereço pra entrega e só cria o pedido após confirmação explícita — que limpa o carrinho.
+
+### O que entrou
+- `src/modules/order/`:
+  - `models.py` — `Order` (status RECEIVED, delivery_type, address, payment_method, delivery_fee, subtotal, total) + `OrderItem` (snapshot comercial: product_name, variant_name, unit_price, quantity, line_total, addons em JSON)
+  - migration `0006_order.py`
+  - `usecases.py` — `OrderService.calculate` (resumo com taxa, não cria nada) e `create` (garantias: confirmação explícita, carrinho não-vazio, endereço obrigatório pra entrega, produto revalidado ativo, snapshot de preço, limpa o carrinho)
+  - `routes.py` — `POST /customers/{id}/checkout/preview` e `POST /customers/{id}/checkout` (201)
+- Tools novas: `calculate_order` (resumo) e `create_order` (só após "confirmo"); `_order_args` extrai delivery_type/address/payment_method da frase
+- Stub: "quero fechar o pedido" → resumo e pede confirmação; "fechar com entrega" sem endereço → pergunta o endereço (US-028); "confirmo, entrega, rua x, dinheiro" → pedido criado
+- Prompt reforçado: só `create_order` com confirmação explícita
+
+### Garantias da spec (testadas)
+- Total calculado pelo backend (nunca pelo LLM)
+- Pedido vazio não pode ser criado (400)
+- Produto inativado/removido não pode ser vendido (409)
+- Preço vem do snapshot do carrinho (mudança de preço depois não altera o pedido)
+- Pedido só nasce após `confirmed=True` / "confirmo" (400 caso contrário)
+- Pedido criado limpa o carrinho (novo pedido começa do zero)
+
+### Testes
+- 9 testes em `tests/test_order.py` (preview retirada/entrega, taxa fixa, vazio, snapshot+clear, endereço, confirmação, produto inativo, preço imutável) + 3 de fluxo IA no `tests/test_ai.py` (resumo pré-confirmação, criar após "confirmo", entrega com endereço) — **85 no total**, ruff limpo
+
+### Validado E2E (docker)
+- "quero 2 pizzas" → `104.00`; "quero fechar, entrega" → pede endereço; "confirmo, entrega, rua das flores 123, dinheiro" → `Pedido #1`, entrega, dinheiro, `Total: 112.50` (104 + 8.50 taxa), carrinho zerado
+
+## Sprint 7 — Pedidos ⏳
+
+Implementar listagem, detalhes e alteração de status (`RECEIVED → CONFIRMED → PREPARING → READY → DELIVERING → COMPLETED`, `CANCELLED`) + frontend (ver `.specs/PLANO_DESENVOLVIMENTO.md`)

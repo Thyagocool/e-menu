@@ -11,7 +11,14 @@ from src.modules.whatsapp.repository import ConversationRepository, MessageRepos
 
 logger = logging.getLogger(__name__)
 
-TOOLS_WITH_CUSTOMER = {"get_cart", "add_to_cart", "update_cart_item", "remove_cart_item"}
+TOOLS_WITH_CUSTOMER = {
+    "get_cart",
+    "add_to_cart",
+    "update_cart_item",
+    "remove_cart_item",
+    "calculate_order",
+    "create_order",
+}
 
 
 class AIService:

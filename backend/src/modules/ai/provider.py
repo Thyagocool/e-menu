@@ -84,6 +84,17 @@ class LLMProvider:
             return LLMResponse("", [LLMToolCall("search_products", {"query": ""})])
         if "carrinho" in low or "meu pedido" in low or "resumo" in low:
             return LLMResponse("", [LLMToolCall("get_cart", {})])
+        if re.search(r"\b(confirmo|confirmar|pode fechar|fecha o pedido)\b", low):
+            return LLMResponse("", [LLMToolCall("create_order", self._order_args(low))])
+        if re.search(r"\b(fechar|finalizar|fazer o pedido|quero pedir|pedir agora)\b", low):
+            args = self._order_args(low)
+            if args.get("delivery_type") == "entrega" and not args.get("address"):
+                # US-028: endereço é obrigatório para entrega
+                return LLMResponse(
+                    "Pra entrega, me passa o endereço (rua, número e bairro) que eu calculo "
+                    "a taxa e te mostro o resumo completo. 📍"
+                )
+            return LLMResponse("", [LLMToolCall("calculate_order", args)])
         if re.search(r"\b(tira|remove|cancela|retira)\b", low):
             match = re.search(r"\b(tira|remove|cancela|retira)\b\s+(?:o |a |do |da )?(.+)", low)
             if match:
@@ -129,6 +140,26 @@ class LLMProvider:
             "\"coloca mais uma\", \"tira a coca\", \"meu pedido\"."
         )
 
+    def _order_args(self, low: str) -> dict:
+        """Extrai delivery_type/address/payment_method de uma frase de checkout."""
+        args: dict = {}
+        if "entrega" in low:
+            args["delivery_type"] = "entrega"
+        elif "retirada" in low or "retirar" in low or "buscar" in low or "pegar" in low:
+            args["delivery_type"] = "retirada"
+        if "pix" in low:
+            args["payment_method"] = "pix"
+        elif "dinheiro" in low:
+            args["payment_method"] = "dinheiro"
+        elif "cartão" in low or "cartao" in low:
+            args["payment_method"] = "cartao"
+        match = re.search(
+            r"(?:rua|avenida|av\.|travessa|alameda|praça|endereço|endereco)[^,]{3,80}", low
+        )
+        if match:
+            args["address"] = match.group(0).strip().strip(" !?.")
+        return args
+
     def _format_tool_result(self, name: str, content: str) -> str:
         try:
             result = json.loads(content)
@@ -138,6 +169,10 @@ class LLMProvider:
             return result["error"]
         if name in ("get_cart", "add_to_cart", "update_cart_item", "remove_cart_item"):
             return self._format_cart(result)
+        if name == "calculate_order":
+            return self._format_order_summary(result)
+        if name == "create_order":
+            return self._format_order_created(result)
         if name == "search_products":
             return self._format_products(result)
         if name == "get_product":
@@ -157,6 +192,37 @@ class LLMProvider:
             if item.get("addons"):
                 desc += " + " + ", ".join(a["name"] for a in item["addons"])
             lines.append(f"- {item['quantity']}x {desc} = {item['line_total']}")
+        return "\n".join(lines)
+
+    def _format_order_summary(self, result: dict) -> str:
+        # resumo pré-confirmação (calculate_order)
+        lines = [f"*Resumo do pedido ({result['delivery_type']}):*"]
+        for item in result["items"]:
+            desc = item["product_name"]
+            if item.get("variant_name"):
+                desc += f" ({item['variant_name']})"
+            if item.get("addons"):
+                desc += " + " + ", ".join(a["name"] for a in item["addons"])
+            lines.append(f"- {item['quantity']}x {desc} = {item['line_total']}")
+        lines.append(f"Subtotal: {result['subtotal']}")
+        if result["delivery_type"] == "entrega":
+            lines.append(f"Taxa de entrega: {result['delivery_fee']}")
+        lines.append(f"*Total: {result['total']}*")
+        lines.append(
+            "Para confirmar, responda \"confirmo\". Se quiser entrega, inclua o endereço; "
+            "e a forma de pagamento (pix, dinheiro ou cartão)."
+        )
+        return "\n".join(lines)
+
+    def _format_order_created(self, result: dict) -> str:
+        lines = [f"*Pedido #{result['id']} confirmado!* 🎉", f"Status: {result['status']}"]
+        if result["delivery_type"] == "entrega":
+            lines.append(f"Entrega em: {result['address']}")
+        else:
+            lines.append("Retirada no local")
+        lines.append(f"Pagamento: {result['payment_method']}")
+        lines.append(f"Total: {result['total']}")
+        lines.append("Obrigado! Quando quiser pedir de novo, é só chamar. 😊")
         return "\n".join(lines)
 
     def _format_products(self, result: dict) -> str:

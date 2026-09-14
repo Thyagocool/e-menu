@@ -159,3 +159,49 @@ async def test_assistant_knows_restaurant_info(client: AsyncClient) -> None:
     assert result["name"] == "Pizzaria Sol"
     assert "forno a lenha" in result["resumo"]
     assert result["delivery_fee"] == "10.00"
+
+
+async def test_assistant_shows_order_summary_before_confirming(client: AsyncClient) -> None:
+    await setup_restaurant(client)
+    body = await send(client, "quero 2 pizzas", msg_id="wamid-ai-20")
+    customer_id = body["customer_id"]
+
+    reply = await send(client, "quero fechar o pedido", msg_id="wamid-ai-21")
+    assert "Resumo do pedido" in reply["reply"]
+    assert "99.80" in reply["reply"]  # 2x Grande 49.90
+    assert "confirmo" in reply["reply"].lower()
+    # nada foi criado ainda
+    cart = (await client.get(f"/customers/{customer_id}/cart")).json()
+    assert len(cart["items"]) == 1
+
+
+async def test_assistant_creates_order_after_confirmation(client: AsyncClient) -> None:
+    await setup_restaurant(client)
+    body = await send(client, "quero 2 pizzas", msg_id="wamid-ai-22")
+    customer_id = body["customer_id"]
+
+    reply = await send(client, "confirmo", msg_id="wamid-ai-23")
+    assert "confirmado" in reply["reply"]
+    assert "99.80" in reply["reply"]
+    # carrinho zerado após o pedido
+    cart = (await client.get(f"/customers/{customer_id}/cart")).json()
+    assert cart["items"] == []
+
+
+async def test_assistant_delivery_with_fee_and_address(client: AsyncClient) -> None:
+    await setup_restaurant(client)
+    body = await send(client, "quero 1 pizza", msg_id="wamid-ai-24")
+    customer_id = body["customer_id"]
+
+    reply = await send(client, "quero fechar, entrega", msg_id="wamid-ai-25")
+    assert "endereço" in reply["reply"].lower()  # US-028: pede o endereço
+    cart = (await client.get(f"/customers/{customer_id}/cart")).json()
+    assert len(cart["items"]) == 1  # nada criado
+
+    reply = await send(
+        client, "confirmo, entrega, rua das flores 123, dinheiro", msg_id="wamid-ai-26"
+    )
+    assert "confirmado" in reply["reply"]
+    assert "rua das flores 123" in reply["reply"]
+    cart = (await client.get(f"/customers/{customer_id}/cart")).json()
+    assert cart["items"] == []

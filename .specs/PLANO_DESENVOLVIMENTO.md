@@ -10,7 +10,8 @@
 | Sprint 3 — WhatsApp | Pendente |
 | Sprint 4 — Carrinho | ✅ Desenvolvida |
 | Sprint 5 — IA | ✅ Desenvolvida |
-| Sprint 6 — Checkout | ⏳ Próxima |
+| Sprint 6 — Checkout | ✅ Desenvolvida |
+| Sprint 7 — Pedidos | ⏳ Próxima |
 | Sprint 7 — Pedidos | Pendente |
 | Sprint 8 — Dashboard | Pendente |
 | Sprint 9 — Hardening | Pendente |
@@ -262,22 +263,16 @@ AIService (loop de tools, adaptação de args)
 
 Integração no webhook do WhatsApp: mensagem → IA → tool → backend → resposta salva como outbound e enviada. `LLM_API_KEY` vazio = assistente heurístico determinístico (mesma interface, troca só configurando a chave).
 
-# Sprint 6 — Checkout
+# Sprint 6 — Checkout ✅ DESENVOLVIDA
 
-Implementar:
-- retirada/entrega
-- endereço
-- taxa fixa
-- pagamento
-- resumo
-- confirmação
+Implementado (ver `.specs/checkout.md` Sprint 6):
 
-Tools:
-
-```text
-calculate_order
-create_order
-```
+- `Order` + `OrderItem` (snapshot comercial) — migration `0006`
+- calculo de total pelo backend (subtotal + taxa fixa)
+- retirada/entrega + endereço obrigatório pra entrega
+- pagamento: pix / dinheiro / cartão (sem gateway no MVP)
+- resumo pré-confirmação e criação só após confirmação explícita
+- tools: `calculate_order`, `create_order`
 
 Garantias:
 - total calculado pelo backend
